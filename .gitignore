@@ -19,6 +19,9 @@ out/
 ### Kotlin ###
 .kotlin
 
+### Partida salva em tempo de execução ###
+game.txt
+
 ### Eclipse ###
 .apt_generated
 .classpath

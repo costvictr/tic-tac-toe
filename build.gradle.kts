@@ -10,13 +10,9 @@ repositories {
 }
 
 dependencies {
-    testImplementation(kotlin("test"))
+    implementation("org.jline:jline-terminal-ffm:4.4.5")
 }
 
 kotlin {
     jvmToolchain(26)
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
