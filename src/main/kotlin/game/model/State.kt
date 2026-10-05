@@ -6,7 +6,7 @@ class State {
     var cursorRow: Int = 0
     var cursorCol: Int = 0
 
-    
+
     // Board guarda os valores da partida. Ex.:
     // [
     //   [  O  , null,  X   ],

@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.4.20"
+    kotlin("plugin.serialization") version "2.4.20"
 }
 
 group = "org.example"
@@ -11,6 +12,7 @@ repositories {
 
 dependencies {
     implementation("org.jline:jline-terminal-ffm:4.4.5")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 }
 
 kotlin {
