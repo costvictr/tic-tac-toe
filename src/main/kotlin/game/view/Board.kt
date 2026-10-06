@@ -1,6 +1,5 @@
 package game.view
 
-import game.model.Player
 import game.model.State
 import game.model.Status
 import utils.Color
@@ -55,28 +54,27 @@ object Board {
         // -- Quando vitória
 
         if (winning && mark != null) {
-            val colored = Color.apply(mark.name, Color.BOLD, colorOf(mark))
+            val colored = Color.apply(mark.name, Color.BOLD, Color.GREEN)
             return if (selected) "[$colored]" else " $colored "
         }
 
-        // -- Partida em andamento
+        // -- Partida em andamento (com foco "[ ]")
 
+        // Pode escolher
         if (selected && mark == null && state.status == Status.IN_PROGRESS) {
-            val preview = Color.apply(state.currentPlayer.name, Color.DIM, colorOf(state.currentPlayer))
+            val preview = Color.apply(state.currentPlayer.name, Color.DIM)
             return "[$preview]"
         }
 
+        // Não pode escolher
         if (selected && mark != null) {
-            return "[${mark.name}]"
+            val openSelector = Color.apply("[", Color.DIM, Color.RED)
+            val closeSelector = Color.apply("]", Color.DIM, Color.RED)
+            return "$openSelector${mark.name}$closeSelector"
         }
 
-        // -- Qualquer cenário
+        // -- Qualquer cenário (fora de foco)
 
         return if (mark == null) "   " else " ${mark.name} "
     }
-
-    // --
-
-    private fun colorOf(player: Player): Int =
-        if (player == Player.X) Color.CYAN else Color.YELLOW
 }

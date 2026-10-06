@@ -5,6 +5,8 @@ object Color {
     const val BOLD = 1
     const val DIM = 2
 
+    const val RED = 31
+    const val GREEN = 32
     const val YELLOW = 33
     const val CYAN = 36
 
