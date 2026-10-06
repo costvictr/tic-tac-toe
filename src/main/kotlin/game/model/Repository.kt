@@ -4,9 +4,20 @@ import java.io.File
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
+
+@Serializable
+private data class SavedGame(
+    val currentPlayer: Player,
+    val status: Status,
+    val board: List<List<Player?>>,
+)
+
+// --
+
 class Repository {
 
     val filename = "game.json"
+
     private val file = File(filename)
     private val json = Json {
         prettyPrint = true
@@ -39,12 +50,3 @@ class Repository {
         }
     }
 }
-
-// --
-
-@Serializable
-private data class SavedGame(
-    val currentPlayer: Player,
-    val status: Status,
-    val board: List<List<Player?>>,
-)
