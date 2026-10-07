@@ -72,7 +72,7 @@ object Board {
         // -- Partida em andamento (com foco "[ ]")
 
         // Pode escolher
-        if (selected && mark == null && state.status == Status.IN_PROGRESS) {
+        if (selected && mark == null) {
             val preview = Color.apply(state.currentPlayer.name, Color.DIM)
             return "[$preview]"
         }
