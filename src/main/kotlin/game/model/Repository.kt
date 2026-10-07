@@ -24,13 +24,18 @@ class Repository {
         ignoreUnknownKeys = true
     }
 
-    fun save(state: State) {
-        val snapshot = SavedGame(
-            currentPlayer = state.currentPlayer,
-            status = state.status,
-            board = state.board.map { row -> row.toList() },
-        )
-        file.writeText(json.encodeToString(snapshot))
+    fun save(state: State): Boolean {
+        return try {
+            val snapshot = SavedGame(
+                currentPlayer = state.currentPlayer,
+                status = state.status,
+                board = state.board.map { row -> row.toList() },
+            )
+            file.writeText(json.encodeToString(snapshot))
+            true
+        } catch (_: Exception) {
+            false
+        }
     }
 
     fun load(): State? {

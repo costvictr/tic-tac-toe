@@ -1,3 +1,7 @@
+import game.controller.Match
+import game.model.Repository
+import game.view.Screen
+
 fun main() {
-    println("Hello World!")
+    Match(Screen(), Repository()).run()
 }
