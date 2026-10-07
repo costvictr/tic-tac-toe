@@ -54,16 +54,16 @@ object Board {
 
     // --
 
-    private fun cell(state: State, row: Int, column: Int): String {
-        val mark = state.board[row][column]
+    private fun cell(state: State, row: Int, col: Int): String {
+        val mark = state.board[row][col]
         val selected =
             state.status == Status.IN_PROGRESS &&
-            state.cursorRow == row && state.cursorCol == column
-
-        val winning = (row to column) in state.winningCells
+            state.cursorRow == row && state.cursorCol == col
 
         // -- Quando vitória
 
+        val winning = (row to col) in state.winningCells
+        
         if (winning && mark != null) {
             val colored = Color.apply(mark.name, Color.BOLD, Color.GREEN)
             return " $colored "
