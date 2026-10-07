@@ -5,7 +5,7 @@ import game.model.Status
 import utils.Color
 
 object Board {
-    fun render(state: State, cursorRow: Int, cursorCol: Int): String = buildString {
+    fun render(state: State, cursor: Cursor): String = buildString {
         // Ex. de saída:
 
         // --
@@ -27,9 +27,9 @@ object Board {
         appendLine("   a   b   c")
 
         for (row in 0..2) {
-            val a = cell(state, cursorRow, cursorCol, row, 0)
-            val b = cell(state, cursorRow, cursorCol, row, 1)
-            val c = cell(state, cursorRow, cursorCol, row, 2)
+            val a = cell(state, cursor, row, 0)
+            val b = cell(state, cursor, row, 1)
+            val c = cell(state, cursor, row, 2)
             
             appendLine("${row + 1} $a|$b|$c")
             if (row < 2) appendLine("  ---|---|---")
@@ -58,15 +58,14 @@ object Board {
 
     private fun cell(
         state: State,
-        cursorRow: Int,
-        cursorCol: Int,
+        cursor: Cursor,
         row: Int,
         col: Int,
     ): String {
         val mark = state.board[row][col]
         val selected =
             state.status == Status.IN_PROGRESS &&
-            cursorRow == row && cursorCol == col
+            cursor.row == row && cursor.col == col
 
         // -- Quando vitória
 
