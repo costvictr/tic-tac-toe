@@ -34,7 +34,7 @@ object Board {
         }
 
         appendLine()
-        appendLine("Setas: mover | Espaço: jogar | R: reiniciar | S: sair")
+        appendLine(help(state))
     }
 
     // --
@@ -46,16 +46,27 @@ object Board {
             Status.IN_PROGRESS -> "Vez do Jogador: [ ${state.currentPlayer.name} ]"
         }
 
+    private fun help(state: State): String =
+        if (state.status == Status.IN_PROGRESS)
+            "Setas: mover | Espaço: jogar | R: reiniciar | S: sair"
+        else
+            "R: reiniciar | S: sair"
+
+    // --
+
     private fun cell(state: State, row: Int, column: Int): String {
         val mark = state.board[row][column]
-        val selected = state.cursorRow == row && state.cursorCol == column
+        val selected =
+            state.status == Status.IN_PROGRESS &&
+            state.cursorRow == row && state.cursorCol == column
+
         val winning = (row to column) in state.winningCells
 
         // -- Quando vitória
 
         if (winning && mark != null) {
             val colored = Color.apply(mark.name, Color.BOLD, Color.GREEN)
-            return if (selected) "[$colored]" else " $colored "
+            return " $colored "
         }
 
         // -- Partida em andamento (com foco "[ ]")
