@@ -11,38 +11,56 @@ class Screen {
 
     private val writer = terminal.writer()
 
-    var closed: Boolean = false
+    var cursorRow: Int = 0
+        private set
+    var cursorCol: Int = 0
         private set
 
     fun draw(state: State) {
-        clean(false)
+        clean()
 
         // No modo raw, \n não volta o cursor para a coluna 0. \r\n faz isso.
         writer.write(
-            Board.render(state).replace("\n", "\r\n")
+            Board.render(state, cursorRow, cursorCol).replace("\n", "\r\n")
         )
         writer.flush()
+    }
+
+    fun moveCursor(rowDelta: Int, colDelta: Int): Boolean {
+        val nextRow = (cursorRow + rowDelta).coerceIn(0, 2)
+        val nextCol = (cursorCol + colDelta).coerceIn(0, 2)
+
+        if (nextRow == cursorRow && nextCol == cursorCol) return false
+
+        cursorRow = nextRow
+        cursorCol = nextCol
+        return true
+    }
+
+    fun resetCursor() {
+        cursorRow = 0
+        cursorCol = 0
     }
 
     fun readCommand(): Command {
         val reader = terminal.reader()
         val code = reader.read()
 
-        if (code == -1) {
-            closed = true
-            return Command.QUIT
-        }
-
         // As setinhas mandam uma sequência de caracteres e
         // precisam ser tratadas (inicia com "ESC").
 
         return when (code) {
+            ESC -> readArrow(reader)
             SPACE -> Command.CONFIRM
             R_UPPER, R_LOWER -> Command.RESTART
-            S_UPPER, S_LOWER -> Command.QUIT
-            ESC -> readArrow(reader)
+            -1, S_UPPER, S_LOWER -> Command.QUIT
             else -> Command.IGNORED
         }
+    }
+
+    fun clean() {
+        writer.write(CLEAR)
+        writer.flush()
     }
 
     fun close() {
@@ -53,12 +71,18 @@ class Screen {
 
     // --
 
-    fun clean(flush: Boolean = true) {
-        writer.write(CLEAR)
-        if (flush) writer.flush()
-    }
+    fun confirmAction(question: String): Boolean {
+        writer.write("\r\n$question [S/N]")
+        writer.flush()
 
-    // --
+        val reader = terminal.reader()
+        while (true) {
+            when (reader.read()) {
+                -1, S_UPPER, S_LOWER -> return true
+                N_UPPER, N_LOWER -> return false
+            }
+        }
+    }
 
     private fun readArrow(reader: Reader): Command {
 
@@ -73,23 +97,6 @@ class Screen {
             RIGHT -> Command.RIGHT
             LEFT -> Command.LEFT
             else -> Command.IGNORED
-        }
-    }
-
-    fun confirmAction(question: String): Boolean {
-        writer.write("\r\n$question [S/N]")
-        writer.flush()
-
-        val reader = terminal.reader()
-        while (true) {
-            when (reader.read()) {
-                -1 -> {
-                    closed = true
-                    return false
-                }
-                S_UPPER, S_LOWER -> return true
-                N_UPPER, N_LOWER -> return false
-            }
         }
     }
 

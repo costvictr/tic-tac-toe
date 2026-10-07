@@ -38,6 +38,10 @@ class Repository {
         }
     }
 
+    fun delete() {
+        if (file.exists()) file.delete()
+    }
+
     fun load(): State? {
         if (!file.exists()) return null
 

@@ -10,56 +10,43 @@ class Match(
     private val screen: Screen,
     private val repository: Repository,
 ) {
-    private val state: State = repository.load() ?: State()
+    private var state: State = State()
 
     fun run() {
-        evaluateBoard()
         try {
+            offerRestore()
+
             while (true) {
                 screen.draw(state)
-                val command = screen.readCommand()
-
-                if (command == Command.QUIT) break
-
-                when (command) {
-                    Command.UP -> moveCursor(-1, 0)
-                    Command.DOWN -> moveCursor(1, 0)
-                    Command.LEFT -> moveCursor(0, -1)
-                    Command.RIGHT -> moveCursor(0, 1)
+                when (screen.readCommand()) {
+                    Command.UP -> if (state.status == Status.IN_PROGRESS) screen.moveCursor(-1, 0)
+                    Command.DOWN -> if (state.status == Status.IN_PROGRESS) screen.moveCursor(1, 0)
+                    Command.LEFT -> if (state.status == Status.IN_PROGRESS) screen.moveCursor(0, -1)
+                    Command.RIGHT -> if (state.status == Status.IN_PROGRESS) screen.moveCursor(0, 1)
                     Command.CONFIRM -> confirmMove()
-                    Command.RESTART -> restart()
+                    Command.RESTART -> if (screen.confirmAction("Deseja reiniciar?")) restartGame()
+                    Command.QUIT -> if (screen.confirmAction("Deseja sair?")) break
                     else -> Unit
                 }
             }
         } finally {
-            repository.save(state)
             screen.close()
         }
     }
 
     // --
 
-    fun moveCursor(rowDelta: Int, colDelta: Int): Boolean {
-        val nextRow = (state.cursorRow + rowDelta).coerceIn(0, 2)
-        val nextCol = (state.cursorCol + colDelta).coerceIn(0, 2)
-
-        if (nextRow == state.cursorRow && nextCol == state.cursorCol)
-            return false
-
-        state.cursorRow = nextRow
-        state.cursorCol = nextCol
-
-        return true
-    }
-
     fun confirmMove(): Boolean {
         if (state.status != Status.IN_PROGRESS)
             return false
 
-        if (state.board[state.cursorRow][state.cursorCol] != null)
+        val row = screen.cursorRow
+        val col = screen.cursorCol
+
+        if (state.board[row][col] != null)
             return false
 
-        state.board[state.cursorRow][state.cursorCol] = state.currentPlayer
+        state.board[row][col] = state.currentPlayer
         evaluateBoard()
 
         // Se o jogo ainda estiver em progresso, troca o jogador atual
@@ -67,6 +54,7 @@ class Match(
             state.currentPlayer = state.currentPlayer.opponent()
         }
 
+        saveGame()
         return true
     }
 
@@ -98,12 +86,34 @@ class Match(
         state.winningCells = emptyList()
     }
 
-    fun restart(): Boolean {
+    fun restartGame(): Boolean {
         state.reset()
+        screen.resetCursor()
+        saveGame()
         return true
     }
 
     // --
+
+    private fun offerRestore() {
+        val saved = repository.load() ?: return
+
+        if (saved.status != Status.IN_PROGRESS) {
+            repository.delete()
+            return
+        }
+
+        screen.draw(saved)
+        if (screen.confirmAction("Deseja restaurar o jogo salvo?")) state = saved
+        else repository.delete()
+    }
+
+    private fun saveGame() {
+        val started = state.board.any { row -> row.any { it != null } }
+
+        if (state.status == Status.IN_PROGRESS && started) repository.save(state)
+        else repository.delete()
+    }
 
     private companion object {
         val WIN_LINES: List<List<Pair<Int, Int>>> = listOf(
