@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "2.4.20"
     kotlin("plugin.serialization") version "2.4.20"
+    application
 }
 
 group = "org.example"
@@ -17,4 +18,9 @@ dependencies {
 
 kotlin {
     jvmToolchain(26)
+}
+
+application {
+    mainClass.set("MainKt")
+    applicationDefaultJvmArgs = listOf("--enable-native-access=ALL-UNNAMED")
 }
