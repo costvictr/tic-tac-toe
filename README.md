@@ -4,23 +4,52 @@ Jogo da velha em modo texto, organizado no padrão MVC.
 
 ## Arquitetura
 
-- `model`: dados da partida (`State`) e arquivo `game.json` (`Repository`).
-- `view`: desenho do tabuleiro (`BoardRenderer`) e leitura do teclado (`GameView`).
-- `controller`: regras (`GameController`) — cursor, jogada, troca de jogador, vitória, empate e reinício.
-- `Main.kt` só liga as três partes.
+- `model`: partida (`State`, `Player`, `Status`) e o arquivo `game.json` (`Repository`).
+- `view`: terminal (`Screen`), desenho do tabuleiro (`Board`), cursor (`Cursor`), teclado (`Keyboard`) e comandos (`Command`). As cores ANSI ficam em `utils.Color`.
+- `controller`: fluxo da partida (`Match`) e regras (`Rules`) — jogada, troca de jogador, vitória e empate.
+- `Main.kt` só liga as três partes: `Match(Screen(), Repository()).run()`.
+
+`Screen` abre o terminal em modo raw, numa tela alternativa. As setas só movem o cursor enquanto a partida está em andamento; os demais comandos voltam para `Match`.
 
 ## Teclas
 
-- Setas: movem o cursor. Na casa vazia, o símbolo da vez aparece apagado dentro de `[ ]`.
-- Espaço: confirma a jogada.
-- `R`: reinicia.
-- `S`: sai.
+- Setas: movem o cursor no tabuleiro 3×3. Na casa vazia, o símbolo da vez aparece apagado dentro de `[ ]`. Na casa ocupada, a marca fica em negrito e os colchetes ficam vermelhos.
+- Espaço: confirma a jogada na casa do cursor. Casa ocupada ou partida já encerrada não altera o tabuleiro.
+- `R`: pede confirmação e reinicia (X começa, cursor no canto).
+- `S`: pede confirmação e sai.
 
-Quando alguém vence, só as três casas da linha vencedora ficam em negrito (X em ciano, O em amarelo). O resto do tabuleiro permanece na cor do terminal.
+As marcas ficam em negrito. Quando alguém vence, só as três casas da linha vencedora ficam em negrito verde. No empate, todas ficam em negrito amarelo. Em vitória ou empate, o cursor some e a ajuda passa a mostrar só `R` e `S`. As perguntas de confirmação aparecem em magenta.
+
+## Exemplo
+
+Partida em andamento, vez de O, cursor em c2. As cores do terminal não aparecem aqui: o `O` entre colchetes fica apagado.
+
+```text
+Vez do Jogador: [ O ]
+
+       a   b   c
+
+  1      |   | X 
+      ---|---|---
+  2      | O |[O]
+      ---|---|---
+  3    X |   |   
+
+
+Setas: mover | Espaço: jogar | R: reiniciar | S: sair
+```
 
 ## Como executar
 
-Rode a função `main` de `Main.kt` pelo IntelliJ. Em Run > Edit Configurations, adicione em VM options:
+Pelo Gradle, na pasta do projeto:
+
+```text
+./gradlew run
+```
+
+O plugin de aplicação já define a classe `MainKt` e a opção de JVM `--enable-native-access=ALL-UNNAMED`, exigida pelo JLine.
+
+Pelo IntelliJ, rode a função `main` de `Main.kt`. Em Run > Edit Configurations, adicione em VM options:
 
 ```text
 --enable-native-access=ALL-UNNAMED
@@ -28,7 +57,9 @@ Rode a função `main` de `Main.kt` pelo IntelliJ. Em Run > Edit Configurations,
 
 ## Arquivo da partida
 
-A partida é salva automaticamente em `game.json`, na pasta de execução:
+A partida em andamento, com ao menos uma jogada, é salva em `game.json`, na pasta de execução, depois de cada jogada. Se o terminal fechar no meio da partida, o último save permanece. Vitória, empate, reinício e tabuleiro vazio apagam o arquivo.
+
+Na abertura, se existir um jogo em andamento, o programa pergunta se deseja restaurar. `S` continua essa partida; `N` apaga o arquivo e começa outra. Um save já encerrado é apagado sem pergunta.
 
 ```json
 {
@@ -42,4 +73,4 @@ A partida é salva automaticamente em `game.json`, na pasta de execução:
 }
 ```
 
-`null` é casa vazia. Se o arquivo não existir ou estiver inválido, começa um jogo novo. Ao carregar, a vitória é calculada de novo a partir do tabuleiro.
+`null` é casa vazia. `status` pode ser `IN_PROGRESS`, `WIN` ou `DRAW`. Se o arquivo não existir, estiver inválido ou o tabuleiro não for 3×3, começa um jogo novo.

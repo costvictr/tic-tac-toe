@@ -12,29 +12,32 @@ object Board {
 
         // Vez do Jogador: [ X ]
         //
-        //    a   b   c
-        // 1    | X |
-        //   ---|---|---
-        // 2    | O |
-        //   ---|---|---
-        // 3    |   |
+        //        a   b   c
+        //
+        //   1      | X |
+        //       ---|---|---
+        //   2      | O |
+        //       ---|---|---
+        //   3      |   |
         //
         // Setas: mover | Espaço: jogar | R: reiniciar | S: sair
 
-
+        appendLine()
         appendLine(statusLine(state))
         appendLine()
-        appendLine("   a   b   c")
+        appendLine("       a   b   c")
+        appendLine()
 
         for (row in 0..2) {
             val a = cell(state, cursor, row, 0)
             val b = cell(state, cursor, row, 1)
             val c = cell(state, cursor, row, 2)
             
-            appendLine("${row + 1} $a|$b|$c")
-            if (row < 2) appendLine("  ---|---|---")
+            appendLine("  ${row + 1}   $a|$b|$c")
+            if (row < 2) appendLine("      ---|---|---")
         }
 
+        appendLine()
         appendLine()
         appendLine(help(state))
     }
@@ -43,8 +46,8 @@ object Board {
 
     private fun statusLine(state: State): String =
         when (state.status) {
-            Status.WIN -> "Vencedor: [ ${state.winner?.name ?: "- Não Identificado -"} ]"
-            Status.DRAW -> "Empate"
+            Status.WIN -> "Vencedor: [ ${(state.winner?.name) ?: "- Não Identificado -"} ]"
+            Status.DRAW -> "Situação: Empate"
             Status.IN_PROGRESS -> "Vez do Jogador: [ ${state.currentPlayer.name} ]"
         }
 
@@ -67,15 +70,6 @@ object Board {
             state.status == Status.IN_PROGRESS &&
             cursor.row == row && cursor.col == col
 
-        // -- Quando vitória
-
-        val winning = (row to col) in state.winningCells
-        
-        if (winning && mark != null) {
-            val colored = Color.apply(mark.name, Color.BOLD, Color.GREEN)
-            return " $colored "
-        }
-
         // -- Partida em andamento (com foco "[ ]")
 
         // Pode escolher
@@ -84,15 +78,24 @@ object Board {
             return "[$preview]"
         }
 
-        // Não pode escolher
-        if (selected && mark != null) {
-            val openSelector = Color.apply("[", Color.DIM, Color.RED)
-            val closeSelector = Color.apply("]", Color.DIM, Color.RED)
-            return "$openSelector${mark.name}$closeSelector"
+        if (mark == null) return "   "
+
+        // -- Quando vitória, empate ou marca comum
+
+        val codes = when {
+            (row to col) in state.winningCells -> intArrayOf(Color.BOLD, Color.GREEN)
+            state.status == Status.DRAW -> intArrayOf(Color.BOLD, Color.YELLOW)
+            else -> intArrayOf(Color.BOLD)
         }
+        val text = Color.apply(mark.name, *codes)
 
         // -- Qualquer cenário (fora de foco)
 
-        return if (mark == null) "   " else " ${mark.name} "
+        if (!selected) return " $text "
+
+        // Não pode escolher
+        val openSelector = Color.apply("[", Color.RED)
+        val closeSelector = Color.apply("]", Color.RED)
+        return "$openSelector$text$closeSelector"
     }
 }

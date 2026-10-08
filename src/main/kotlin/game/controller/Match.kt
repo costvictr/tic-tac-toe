@@ -33,7 +33,7 @@ class Match(
     // --
 
     fun confirmMove(): Boolean {
-        if (!Rules.play(state, screen.cursor)) return false
+        if (!Rules.tryMove(state, screen.cursor)) return false
         saveGame()
         return true
     }

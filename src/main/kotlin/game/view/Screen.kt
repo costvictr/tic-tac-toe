@@ -5,6 +5,7 @@ import org.jline.terminal.TerminalBuilder
 import org.jline.utils.InfoCmp
 import game.model.State
 import game.model.Status
+import utils.Color
 
 class Screen {
     private val terminal: Terminal = TerminalBuilder.builder().build()
@@ -34,10 +35,10 @@ class Screen {
     fun readCommand(state: State): Command {
         while (true) {
             when (val command = keyboard.readCommand()) {
-                Command.UP -> if (state.status == Status.IN_PROGRESS) cursor.move(-1, 0)
-                Command.DOWN -> if (state.status == Status.IN_PROGRESS) cursor.move(1, 0)
-                Command.LEFT -> if (state.status == Status.IN_PROGRESS) cursor.move(0, -1)
-                Command.RIGHT -> if (state.status == Status.IN_PROGRESS) cursor.move(0, 1)
+                Command.UP, Command.DOWN, Command.LEFT, Command.RIGHT -> {
+                    if (state.status != Status.IN_PROGRESS) continue
+                    cursor.move(command.rowDelta, command.colDelta)
+                }
                 else -> return command
             }
             draw(state)
@@ -64,7 +65,7 @@ class Screen {
         // (permite digitação livre)
 
         terminal.attributes = previousAttributes // modo cooked
-        writer.write("\r\n$question [s/N] ")
+        writer.write("\r\n${Color.apply(question, Color.MAGENTA)} [s/N] ")
         writer.flush()
 
         val answer = try {

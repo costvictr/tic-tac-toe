@@ -5,18 +5,19 @@ import game.model.Status
 import game.view.Cursor
 
 object Rules {
-    fun play(state: State, cursor: Cursor ): Boolean {
+    fun tryMove(state: State, cursor: Cursor): Boolean {
         if (state.status != Status.IN_PROGRESS)
             return false
 
         val row = cursor.row
+
         val col = cursor.col
 
         if (state.board[row][col] != null)
             return false
 
         state.board[row][col] = state.currentPlayer
-        evaluate(state)
+        evaluateBoard(state)
 
         // Se o jogo ainda estiver em progresso, troca o jogador atual
         if (state.status == Status.IN_PROGRESS) {
@@ -28,7 +29,7 @@ object Rules {
 
     // --
 
-    private fun evaluate(state: State) {
+    private fun evaluateBoard(state: State) {
 
         // -- Verifica se há um vencedor
 

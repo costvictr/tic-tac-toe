@@ -8,7 +8,7 @@ object Color {
     const val RED = 31
     const val GREEN = 32
     const val YELLOW = 33
-    const val CYAN = 36
+    const val MAGENTA = 35
 
     fun apply(text: String, vararg codes: Int): String {
         val prefix = codes.joinToString(";")
