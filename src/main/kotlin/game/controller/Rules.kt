@@ -10,7 +10,6 @@ object Rules {
             return false
 
         val row = cursor.row
-
         val col = cursor.col
 
         if (state.board[row][col] != null)
